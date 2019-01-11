@@ -24,6 +24,8 @@ def get_paper_info(url):
     result['citation_link'] = tag.get_text() if tag else None
     tag = soup.find("a", string = re.compile(r'.*Electronic Refereed Journal Article.*', re.I))
     result['article_link'] = tag.get_text() if tag else None
+    tag = soup.find('a', string = re.compile(r'.*Refereed Journal Article (PDF/Postscript).*', re.I))
+    result['pdf_link'] = tag.get_text() if tag else None
     return result
 
 def get_citation_list(url):
@@ -62,6 +64,17 @@ def write_for_one_paper(dest_dir, tatus, main_paper, valid_citation_list):
         lines.append(citation_line)
     with open(os.path.join(dest_dir, main_paper['bibcode'] + ".txt"), 'w') as fout:
         fout.writelines("\n".join(lines))
+        
+def download_pdfs(dest_dir, main_paper, valid_citation_list):
+    prefix = os.path.join(dest_dir, main_paper['bibcode'] + '_pdfs')
+    os.mkdir(prefix)
+    os.mkdir(os.path.join(prefix, 'citations'))
+    if not main_paper['pdf_link']:
+        print 'download pdf from the link to prefix, use the bibcode as name'
+    for citation in valid_citation_list:
+        if not citation['pdf_link']:
+            print 'download pdf from the link to prefix/citations, use the bibcode as name'
+    
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
