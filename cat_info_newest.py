@@ -20,12 +20,14 @@ def sea(wb):
     wurl= requests.get(wb,{'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:6.0) Gecko/20100101 Firefox/6.0'})
     soup = BeautifulSoup(wurl.text,'lxml')
     ##########
+    #get the pdf download link
+    pdflink = []
     resp = urllib2.urlopen(wb)
-    soup = BeautifulSoup(resp, from_encoding=resp.info().getparam('Refereed Journal Article (PDF/Postscript)'))
+    soup = BeautifulSoup(resp, 'lxml', from_encoding=resp.info().getparam('Refereed Journal Article (PDF/Postscript)'))
     for link in soup.find_all('a', href=True, text = 'Full Refereed Journal Article (PDF/Postscript)'):
-        print link['href']
+    #    print link['href']
         if link.has_attr('href'):
-            print link['href']
+            pdflink = link['href']
     #########
     lts.append(''.join(soup.find_all(text="Authors:")[0].parent.parent.next_sibling.next_sibling.text.split()).encode('utf-8'))
     lts.append(soup.find_all(text="Title:")[0].parent.parent.next_sibling.next_sibling.text.encode('utf-8'))
@@ -47,14 +49,14 @@ def sea(wb):
     else:
         lts.append(tpl[0].encode('utf-8'))    
     lts.append(soup.find_all(text="Publication Date:")[0].parent.parent.next_sibling.next_sibling.text.split('/')[1].encode('utf-8'))
-    return lts,len_tpl
+    return lts,len_tpl,pdflink
 
 def head(wb,outfile):
     print outfile
     wurl= requests.get(wb,{'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:6.0) Gecko/20100101 Firefox/6.0'})
     soup = BeautifulSoup(wurl.text,'lxml')
     cord = soup.find_all(text=re.compile("Citations to the Article "))[0].parent
-    fpg,len_tpl = sea(wb)
+    fpg,len_tpl,pdflink = sea(wb)
     print fpg
     with open(r'%s'%outfile,'w')as f:
         if len_tpl==4:
@@ -72,22 +74,26 @@ def write(wb,outfile):
     with open(r'%s'%outfile,'a')as f:
         for i in range(len(lt)):
             wb = lt[i].parent.a.get("href").encode('utf-8')
-            oupt,len_tpl = sea(wb)
+            oupt,len_tpl,pdflink = sea(wb)
+            download_file(pdflink, str(i+1)+'.pdf')
             print sea(wb)
             if len_tpl==4:
                 print>>f,'他引论文%s\t'%(i+1) + '. '.join(oupt[:3])+'.%s(%s)(%s),%s.\n'%(oupt[3],oupt[4],oupt[6],oupt[5])
             else:
                 print>>f,'他引论文%s\t'%(i+1) + '. '.join(oupt[:3])+'.%s.\n'%(oupt[-1])
+            print '\n'
 
-#def downloadfile(link):
-#    download_file("http://adsabs.harvard.edu/abs/1997ApJ...477L..95Z")
-#
-#def download_file(download_url):
-#    response = urllib2.urlopen(download_url)
-#    file = open("document1.pdf", 'wb')
-#    file.write(response.read())
-#    file.close()
-#    print("Completed")
+######################
+def download_file(pdflink,outfile):
+    if pdflink == []:
+        pass
+    else:
+        response = urllib2.urlopen(pdflink)
+        file = open(outfile, 'wb')
+        file.write(response.read())
+        file.close()
+        print("Download Completed")
+######################
 
 if __name__ == "__main__":
     if len(sys.argv)< 2:
