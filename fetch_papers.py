@@ -16,6 +16,7 @@ def get_paper_list(url):
 def get_paper_info(url):
     soup = BS(requests.get(url).content, "lxml")
     result = {}
+    result['ads_link'] = url
     result['title'] = soup.find("title").get_text()
     result['author_list'] = soup.find("meta", attrs = {"name": "citation_authors"}).get("content").split("; ")
     result['bibcode'] = soup.find('input', attrs = {"type": "hidden", "name": "bibcode"}).get("value")
