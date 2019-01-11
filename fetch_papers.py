@@ -33,10 +33,10 @@ def get_citation_list(url):
         citation_list.append(paper)
     return citation_list
 
-def check_citation_type(al1, al2):
+def check_citation_type(main_paper, citation):
     # check for self citation or others by comparing author lists
-    for x1 in al1:
-        for x2 in al2:
+    for x1 in main_paper['author_list']:
+        for x2 in citation['author_list']:
             # TODO: here use a very strict check
             if x1 == x2: return False
     return True
@@ -48,9 +48,7 @@ def fetch_for_one_paper(link):
     citation_list = get_citation_list(main_paper['citation_link'])
     valid_citation_list = []
     for citation in citation_list:
-        if check_citation_type(main_paper['author_list'], citation['author_list']):
-        # if True:
-            valid_citation_list.append(citation)
+        if check_citation_type(main_paper, citation): valid_citation_list.append(citation)
     status = "%d / %d" % (len(valid_citation_list), len(citation_list))
     return status, main_paper, valid_citation_list
 
