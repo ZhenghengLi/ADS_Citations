@@ -51,7 +51,7 @@ def fetch_for_one_paper(name, link):
     print "total %d." % len(citation_list),
     sys.stdout.flush()
     if (len(citation_list) != main_paper['citation_count']):
-        print "WARING: expectation is %d" % main_paper['citation_count']
+        print "WARNING: expectation is %d" % main_paper['citation_count']
     else:
         print
     valid_citations = []
