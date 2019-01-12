@@ -20,22 +20,15 @@ def get_paper_info(url):
     result['title'] = soup.find("title").get_text()
     result['author_list'] = soup.find("meta", attrs = {"name": "citation_authors"}).get("content").split("; ")
     result['bibcode'] = soup.find('input', attrs = {"type": "hidden", "name": "bibcode"}).get("value")
-    tag = soup.find("a", string = re.compile(r'.*Citations to the Article.*', re.I))
-    result['citation_link'] = tag.get("href") if tag else None
-    tag = soup.find("a", string = re.compile(r'.*Electronic Refereed Journal Article.*', re.I))
+    tag = soup.find("a", string = re.compile(r'.*Electronic Refereed Journal Article.*'))
     result['article_link'] = tag.get("href") if tag else None
-    tag = soup.find('a', string = re.compile(r'.*Refereed Journal Article.*PDF.*', re.I))
+    tag = soup.find('a', string = re.compile(r'.*Refereed Journal Article.*PDF.*'))
     result['pdf_link'] = tag.get("href") if tag else None
+    ref_citation = re.compile(r'.*Citations to the Article \((\d+)\).*')
+    tag = soup.find("a", string = ref_citation)
+    result['citation_link'] = tag.get("href") if tag else None
+    result['citation_count'] = int(ref_citation.match(tag.get_text()).group(1)) if tag else 0
     return result
-
-def get_citation_list(url, log_indent = -1):
-    citation_list = []
-    paper_list = get_paper_list(url)
-    for name, link in paper_list:
-        if log_indent >= 0: print " " * log_indent + "fetch citation info of " + name + " ..."
-        paper = get_paper_info(link)
-        citation_list.append(paper)
-    return citation_list
 
 def check_citation_type(main_paper, citation):
     # check for self citation or others by comparing author lists
@@ -45,16 +38,34 @@ def check_citation_type(main_paper, citation):
             if x1 == x2: return False
     return True
 
-def fetch_for_one_paper(link):
+def fetch_for_one_paper(name, link):
+    print 'fetching citations for paper ' + name + ' ...'
     main_paper = get_paper_info(link)
+    # print_paper_info(main_paper)
     if not main_paper['citation_link']:
-        return "0 / 0", main_paper, []
-    citation_list = get_citation_list(main_paper['citation_link'])
-    valid_citation_list = []
-    for citation in citation_list:
-        if check_citation_type(main_paper, citation): valid_citation_list.append(citation)
-    status = "%d / %d" % (len(valid_citation_list), len(citation_list))
-    return status, main_paper, valid_citation_list
+        print "NO CITATIONS for this paper."
+        return "NO CITATIONS", main_paper, []
+    print " - fetching citation list ...",
+    sys.stdout.flush()
+    citation_list = get_paper_list(main_paper['citation_link'])
+    print "total %d." % len(citation_list),
+    sys.stdout.flush()
+    if (len(citation_list) != main_paper['citation_count']):
+        print "WARING: expectation is %d" % main_paper['citation_count']
+    else:
+        print
+    valid_citations = []
+    for (index, (name, link)) in enumerate(citation_list, start = 1):
+        print " - %d/%d" % (index, len(citation_list)), "fetching citation info of " + name + " ...",
+        sys.stdout.flush()
+        citation = get_paper_info(link)
+        if check_citation_type(main_paper, citation):
+            valid_citations.append(citation)
+            print '[cited by others]'
+        else:
+            print '[cited by self]'
+    status = "valid: %d; total: %d" % (len(valid_citations), len(citation_list))
+    return status, main_paper, valid_citations
 
 def write_for_one_paper(dest_dir, tatus, main_paper, valid_citation_list):
     lines = [status, "bibcode, title, article_link"]
@@ -84,7 +95,7 @@ def print_paper_info(paper, log_indent = 0):
             print " " * log_indent + key, "=>", paper['author_list'][0:3] + ['et al.']
         else:
             print " " * log_indent + key, "=>", paper[key]
-    print ''
+    print " " * log_indent + "-----------------------------------------------------------"
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
@@ -93,11 +104,13 @@ if __name__ == "__main__":
 
     url, destdir = sys.argv[1:3]
 
-    #main_list = get_paper_list(url)
+    print 'fetching main list ...',
+    sys.stdout.flush()
+    main_list = get_paper_list(url)
+    print "total: %d" % len(main_list)
 
-    #for name_link in main_list[0]:
-    #    status, main_paper, valid_citation_list = fetch_entry(name_link)
-    #    write_data(destdir, status, main_paper, valid_citation_list)
+    for name, link in main_list[0:1]:
+        status, main_paper, valid_citations = fetch_for_one_paper(name, link)
 
     # res = get_paper_info(url)
     # for x in res:
@@ -105,11 +118,6 @@ if __name__ == "__main__":
 
     # res = fetch_for_one_paper(url)
     # print get_citation_list(url)
-
-    res = get_citation_list(url, 4)
-    print " "
-    for x in res:
-        print_paper_info(x, 4)
 
 
 
