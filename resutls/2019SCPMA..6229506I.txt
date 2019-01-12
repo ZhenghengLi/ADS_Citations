@@ -1,4 +1,0 @@
-valid: 1; total: 5
-bibcode, title, ads_link
-2019SCPMA..6229506I, Observatory science with eXTP, http://adsabs.harvard.edu/cgi-bin/nph-data_query?bibcode=2019SCPMA..6229506I&db_key=AST&link_type=ABSTRACT
-2018arXiv181004720Z, Toward Resolved Simulations of Burning Fronts in Thermonuclear X-ray Bursts, http://adsabs.harvard.edu/cgi-bin/nph-data_query?bibcode=2018arXiv181004720Z&db_key=PRE&link_type=ABSTRACT

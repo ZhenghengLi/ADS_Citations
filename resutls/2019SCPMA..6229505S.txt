@@ -1,3 +1,0 @@
-valid: 0; total: 4
-bibcode, title, ads_link
-2019SCPMA..6229505S, Physics and astrophysics of strong magnetic field systems with eXTP, http://adsabs.harvard.edu/cgi-bin/nph-data_query?bibcode=2019SCPMA..6229505S&db_key=AST&link_type=ABSTRACT
