@@ -67,23 +67,27 @@ def fetch_for_one_paper(name, link):
     status = "valid: %d; total: %d" % (len(valid_citations), len(citation_list))
     return status, main_paper, valid_citations
 
-def write_for_one_paper(dest_dir, tatus, main_paper, valid_citation_list):
-    lines = [status, "bibcode, title, article_link"]
-    leading_line = "%s, %s, %s" % (main_paper['bibcode'], main_paper['title'], main_paper['article_link'])
+def write_for_one_paper(dest_dir, tatus, main_paper, valid_citations):
+    print "writting citation data for paper " + main_paper['bibcode'], "...",
+    sys.stdout.flush()
+    lines = [status, "bibcode, title, ads_link"]
+    leading_line = "%s, %s, %s" % (main_paper['bibcode'], main_paper['title'], main_paper['ads_link'])
     lines.append(leading_line)
-    for citation in valid_citation_list:
-        citation_line = "%s, %s, %s" % (citation['bibcode'], citation['title'], citation['article_link'])
+    for citation in valid_citations:
+        citation_line = "%s, %s, %s" % (citation['bibcode'], citation['title'], citation['ads_link'])
         lines.append(citation_line)
-    with open(os.path.join(dest_dir, main_paper['bibcode'] + ".txt"), 'w') as fout:
+    output_fn = os.path.join(dest_dir, main_paper['bibcode'] + ".txt")
+    with open(output_fn, 'w') as fout:
         fout.writelines("\n".join(lines))
+    print "written to %s" % output_fn
 
-def download_pdfs(dest_dir, main_paper, valid_citation_list):
+def download_pdfs(dest_dir, main_paper, valid_citations):
     prefix = os.path.join(dest_dir, main_paper['bibcode'] + '_pdfs')
     os.mkdir(prefix)
     os.mkdir(os.path.join(prefix, 'citations'))
     if not main_paper['pdf_link']:
         print 'download pdf from the link to prefix, use the bibcode as name'
-    for citation in valid_citation_list:
+    for citation in valid_citations:
         if not citation['pdf_link']:
             print 'download pdf from the link to prefix/citations, use the bibcode as name'
 
@@ -109,8 +113,10 @@ if __name__ == "__main__":
     main_list = get_paper_list(url)
     print "total: %d" % len(main_list)
 
-    for name, link in main_list[0:1]:
+    for name, link in main_list[0:2]:
         status, main_paper, valid_citations = fetch_for_one_paper(name, link)
+        write_for_one_paper(destdir, status, main_paper, valid_citations)
+
 
     # res = get_paper_info(url)
     # for x in res:
