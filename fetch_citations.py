@@ -116,7 +116,7 @@ if __name__ == "__main__":
     main_list = get_paper_list(url)
     print "total: %d" % len(main_list)
 
-    for name, link in main_list[0:2]:
+    for name, link in main_list[0:5]:
         status, main_paper, valid_citations = fetch_for_one_paper(name, link)
         write_for_one_paper(destdir, status, main_paper, valid_citations)
 
