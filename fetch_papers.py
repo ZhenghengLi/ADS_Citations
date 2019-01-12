@@ -21,17 +21,18 @@ def get_paper_info(url):
     result['author_list'] = soup.find("meta", attrs = {"name": "citation_authors"}).get("content").split("; ")
     result['bibcode'] = soup.find('input', attrs = {"type": "hidden", "name": "bibcode"}).get("value")
     tag = soup.find("a", string = re.compile(r'.*Citations to the Article.*', re.I))
-    result['citation_link'] = tag.get_text() if tag else None
+    result['citation_link'] = tag.get("href") if tag else None
     tag = soup.find("a", string = re.compile(r'.*Electronic Refereed Journal Article.*', re.I))
-    result['article_link'] = tag.get_text() if tag else None
-    tag = soup.find('a', string = re.compile(r'.*Refereed Journal Article (PDF/Postscript).*', re.I))
-    result['pdf_link'] = tag.get_text() if tag else None
+    result['article_link'] = tag.get("href") if tag else None
+    tag = soup.find('a', string = re.compile(r'.*Refereed Journal Article.*PDF.*', re.I))
+    result['pdf_link'] = tag.get("href") if tag else None
     return result
 
-def get_citation_list(url):
+def get_citation_list(url, log_indent = -1):
     citation_list = []
     paper_list = get_paper_list(url)
     for name, link in paper_list:
+        if log_indent >= 0: print " " * log_indent + "fetch citation info of " + name + " ..."
         paper = get_paper_info(link)
         citation_list.append(paper)
     return citation_list
@@ -64,7 +65,7 @@ def write_for_one_paper(dest_dir, tatus, main_paper, valid_citation_list):
         lines.append(citation_line)
     with open(os.path.join(dest_dir, main_paper['bibcode'] + ".txt"), 'w') as fout:
         fout.writelines("\n".join(lines))
-        
+
 def download_pdfs(dest_dir, main_paper, valid_citation_list):
     prefix = os.path.join(dest_dir, main_paper['bibcode'] + '_pdfs')
     os.mkdir(prefix)
@@ -74,7 +75,16 @@ def download_pdfs(dest_dir, main_paper, valid_citation_list):
     for citation in valid_citation_list:
         if not citation['pdf_link']:
             print 'download pdf from the link to prefix/citations, use the bibcode as name'
-    
+
+def print_paper_info(paper, log_indent = 0):
+    bibcode = paper['bibcode']
+    print " " * log_indent + "== " + bibcode + " ========================================"
+    for key in paper:
+        if key == 'author_list' and len(paper['author_list']) > 3:
+            print " " * log_indent + key, "=>", paper['author_list'][0:3] + ['et al.']
+        else:
+            print " " * log_indent + key, "=>", paper[key]
+    print ''
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
@@ -93,8 +103,13 @@ if __name__ == "__main__":
     # for x in res:
     #     print x, "=>", res[x]
 
-    print fetch_for_one_paper(url)
+    # res = fetch_for_one_paper(url)
     # print get_citation_list(url)
+
+    res = get_citation_list(url, 4)
+    print " "
+    for x in res:
+        print_paper_info(x, 4)
 
 
 
