@@ -70,15 +70,12 @@ def fetch_for_one_paper(name, link):
 def write_for_one_paper(dest_dir, status, main_paper, valid_citations):
     print "writting citation data for paper " + main_paper['bibcode'], "...",
     sys.stdout.flush()
-    lines = [status, "bibcode, title, ads_link"]
-    leading_line = "%s, %s, %s" % (main_paper['bibcode'], main_paper['title'], main_paper['ads_link'])
-    lines.append(leading_line)
-    for citation in valid_citations:
-        citation_line = "%s, %s, %s" % (citation['bibcode'], citation['title'], citation['ads_link'])
-        lines.append(citation_line)
+    fmt, items = "%s, %s, %s", ['bibcode', 'title', 'ads_link']
+    lines = [status, ', '.join(items)]
+    lines.append( fmt % tuple([main_paper[it] for it in items]) )
+    for citation in valid_citations: lines.append( fmt % tuple([citation[it] for it in items]) )
     output_fn = os.path.join(dest_dir, main_paper['bibcode'] + ".txt")
-    with open(output_fn, 'w') as fout:
-        fout.writelines("\n".join(lines))
+    with open(output_fn, 'w') as fout: fout.writelines("\n".join(lines))
     print "written to %s" % output_fn
 
 def download_pdfs(dest_dir, main_paper, valid_citations):
