@@ -107,6 +107,9 @@ if __name__ == "__main__":
         exit(1)
 
     url, destdir = sys.argv[1:3]
+    if not os.path.isdir(destdir):
+        print 'Directory "%s" does not exist.' % destdir
+        exit(1)
 
     print 'fetching main list ...',
     sys.stdout.flush()
@@ -116,14 +119,5 @@ if __name__ == "__main__":
     for name, link in main_list[0:2]:
         status, main_paper, valid_citations = fetch_for_one_paper(name, link)
         write_for_one_paper(destdir, status, main_paper, valid_citations)
-
-
-    # res = get_paper_info(url)
-    # for x in res:
-    #     print x, "=>", res[x]
-
-    # res = fetch_for_one_paper(url)
-    # print get_citation_list(url)
-
 
 
