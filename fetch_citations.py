@@ -67,7 +67,7 @@ def fetch_for_one_paper(name, link):
     status = "valid: %d; total: %d" % (len(valid_citations), len(citation_list))
     return status, main_paper, valid_citations
 
-def write_for_one_paper(dest_dir, tatus, main_paper, valid_citations):
+def write_for_one_paper(dest_dir, status, main_paper, valid_citations):
     print "writting citation data for paper " + main_paper['bibcode'], "...",
     sys.stdout.flush()
     lines = [status, "bibcode, title, ads_link"]
