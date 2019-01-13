@@ -20,8 +20,9 @@ def get_paper_info(url):
     result['title'] = soup.find("meta", attrs = {"name": "citation_title"}).get("content")
     result['author_list_str'] = soup.find("meta", attrs = {"name": "citation_authors"}).get("content")
     result['author_list'] = result['author_list_str'].split("; ")
-    data_string = soup.find("meta", attrs = {"name": "citation_date"}).get("content")
-    result['publication_date'] = "%s-%s" % tuple(data_string.split("/")[::-1])
+    date_list = soup.find("meta", attrs = {"name": "citation_date"}).get("content").split("/")[::-1]
+    if len(date_list) < 2: date_list.append('00')
+    result['publication_date'] = "%s-%s" % tuple(date_list)
     result['bibcode'] = soup.find('input', attrs = {"type": "hidden", "name": "bibcode"}).get("value")
     tag = soup.find("a", string = re.compile(r'.*Electronic Refereed Journal Article.*'))
     result['article_link'] = tag.get("href") if tag else None
