@@ -1,9 +1,38 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
+import sys, re
 from docx import Document
 from docx.shared import Inches
+
+def extract_info(line):
+    separator = u' <-=|=-> '
+    fields = line.split(separator)
+    info = {}
+    info['bibcode'] = fields[0]
+    info['publication_date'] = fields[1]
+    info['author_list_str'] = fields[2]
+    info['title'] = fields[3]
+    info['publication_journal'] = fields[4]
+    info['ads_link'] = fields[5]
+    return info
+
+def read_paper(filename):
+    lines = None
+    with io.open(filename, 'r') as fin: lines = fin.readlines()
+    lines = [line.strip() for line in lines]
+    paper = {}
+    ref_fl = re.compile(r'valid: (\d+); total: (\d+)')
+    m = ref_fl.match(lines[0])
+    if m:
+        paper['valid'], paper['total'] = int(m.group(1)), int(m.group(2))
+    else:
+        paper['valid'], paper['total'] = 0, 0
+    paper['main'] = extract_info(lines[2])
+    paper['citations'] = []
+    for line in lines[3:]:
+        paper['citations'].append(extract_info(line))
+    return paper
 
 def add_two_cols(table, col1_str, col2_str):
     col1, col2 = table.add_row().cells
