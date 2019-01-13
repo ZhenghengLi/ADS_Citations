@@ -20,9 +20,10 @@ def get_paper_info(url):
     result['title'] = soup.find("meta", attrs = {"name": "citation_title"}).get("content")
     result['author_list_str'] = soup.find("meta", attrs = {"name": "citation_authors"}).get("content")
     result['author_list'] = result['author_list_str'].split("; ")
-    date_list = soup.find("meta", attrs = {"name": "citation_date"}).get("content").split("/")[::-1]
+    date_list = soup.find("meta", attrs = {"name": "dc.date"}).get("content").split("/")[::-1]
     if len(date_list) < 2: date_list.append('00')
     result['publication_date'] = "%s-%s" % tuple(date_list)
+    result['publication_journal'] = soup.find("meta", attrs = {"name": "dc.source"}).get("content")
     result['bibcode'] = soup.find('input', attrs = {"type": "hidden", "name": "bibcode"}).get("value")
     tag = soup.find("a", string = re.compile(r'.*Electronic Refereed Journal Article.*'))
     result['article_link'] = tag.get("href") if tag else None
@@ -75,10 +76,11 @@ def fetch_for_one_paper(name, link):
 def write_for_one_paper(dest_dir, status, main_paper, valid_citations):
     print "writting citation data for paper " + main_paper['bibcode'], "...",
     sys.stdout.flush()
-    fmt, items = "%s, %s, %s, %s", ['bibcode', 'publication_date', 'title', 'ads_link']
-    lines = [status, ', '.join(items)]
-    lines.append( fmt % tuple([main_paper[it] for it in items]) )
-    for citation in valid_citations: lines.append( fmt % tuple([citation[it] for it in items]) )
+    items = ['bibcode', 'publication_date', 'author_list_str', 'title', 'publication_journal', 'ads_link']
+    separator = u' <-=|=-> '
+    lines = [status, separator.join(items)]
+    lines.append( separator.join([main_paper[it] for it in items]) )
+    for citation in valid_citations: lines.append( separator.join([citation[it] for it in items]) )
     output_fn = os.path.join(dest_dir, main_paper['bibcode'] + ".txt")
     with io.open(output_fn, 'w') as fout: fout.writelines(u"\n".join(lines))
     print "written to %s" % output_fn
