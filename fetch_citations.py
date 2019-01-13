@@ -61,6 +61,7 @@ def fetch_for_one_paper(name, link):
         citation = get_paper_info(link)
         if check_citation_type(main_paper, citation):
             valid_citations.append(citation)
+            # print_paper_info(citation)
             print '[cited by others]'
         else:
             print '[cited by self]'
@@ -79,14 +80,42 @@ def write_for_one_paper(dest_dir, status, main_paper, valid_citations):
     print "written to %s" % output_fn
 
 def download_pdfs(dest_dir, main_paper, valid_citations):
-    prefix = os.path.join(dest_dir, main_paper['bibcode'] + '_pdfs')
-    os.mkdir(prefix)
-    os.mkdir(os.path.join(prefix, 'citations'))
-    if not main_paper['pdf_link']:
-        print 'download pdf from the link to prefix, use the bibcode as name'
+    print "downloading PDFs for paper " + main_paper['bibcode'], "..."
+    prefix_dir = os.path.join(dest_dir, main_paper['bibcode'] + '_pdfs')
+    prefix_citation_dir = os.path.join(prefix_dir, 'citations')
+    if not os.path.isdir(prefix_dir): os.mkdir(prefix_dir)
+    if not os.path.isdir(prefix_citation_dir): os.mkdir(prefix_citation_dir)
+    print ' - downloading ' + main_paper['bibcode'], "...",
+    sys.stdout.flush()
+    if main_paper['pdf_link']:
+        output_fn = os.path.join(prefix_dir, main_paper['bibcode'] + ".pdf")
+        if download_one_pdf(main_paper['pdf_link'], output_fn):
+            print "[DONE => %s]" % output_fn
+        else:
+            print "[FAILED]"
+    else:
+        print '[NO PDF LINK]'
     for citation in valid_citations:
-        if not citation['pdf_link']:
-            print 'download pdf from the link to prefix/citations, use the bibcode as name'
+        print ' - downloading ' + citation['bibcode'], "...",
+        sys.stdout.flush()
+        if citation['pdf_link']:
+            output_fn = os.path.join(prefix_citation_dir, citation['bibcode'] + ".pdf")
+            if download_one_pdf(citation['pdf_link'], output_fn):
+                print "[DONE => %s]" % output_fn
+            else:
+                print "[FAILED]"
+        else:
+            print "[NO PDF LINK]"
+
+def download_one_pdf(url, filename):
+    print
+    print url
+    req = requests.get(url, allow_redirects=True)
+    if req.status_code == 200 and req.headers.get('content-type') == 'application/pdf':
+        with open(filename, 'wb') as fout: fout.write(req.content)
+        return True
+    else:
+        return False
 
 def print_paper_info(paper, log_indent = 0):
     bibcode = paper['bibcode']
@@ -117,5 +146,6 @@ if __name__ == "__main__":
         print "== %d/%d ==" % (index, len(main_list))
         status, main_paper, valid_citations = fetch_for_one_paper(name, link)
         write_for_one_paper(destdir, status, main_paper, valid_citations)
+        download_pdfs(destdir, main_paper, valid_citations)
 
 
