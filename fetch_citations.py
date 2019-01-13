@@ -17,7 +17,7 @@ def get_paper_info(url):
     soup = BS(requests.get(url).content, "lxml")
     result = {}
     result['ads_link'] = url
-    result['title'] = soup.find("title").get_text()
+    result['title'] = soup.find("meta", attrs = {"name": "citation_title"}).get("content")
     result['author_list'] = soup.find("meta", attrs = {"name": "citation_authors"}).get("content").split("; ")
     data_string = soup.find("meta", attrs = {"name": "citation_date"}).get("content")
     result['citation_date'] = tuple(data_string.split("/")[::-1])
