@@ -109,7 +109,7 @@ def download_pdfs(dest_dir, main_paper, valid_citations):
 
 def download_one_pdf(url, filename):
     try:
-        req = requests.get(url, allow_redirects=True)
+        req = requests.get(url, headers = {'user-agent': 'ADS'})
     except requests.ConnectionError, e:
         return False
     if req.status_code == 200 and req.headers.get('content-type') == 'application/pdf':
