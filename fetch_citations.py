@@ -73,8 +73,8 @@ def write_for_one_paper(dest_dir, status, main_paper, valid_citations):
     sys.stdout.flush()
     fmt, items = "%s, %s, %s", ['bibcode', 'title', 'ads_link']
     lines = [status, ', '.join(items)]
-    lines.append( fmt % tuple([main_paper[it] for it in items]) )
-    for citation in valid_citations: lines.append( fmt % tuple([citation[it] for it in items]) )
+    lines.append( fmt % tuple([main_paper[it].encode('utf-8') for it in items]) )
+    for citation in valid_citations: lines.append( fmt % tuple([citation[it].encode('utf-8') for it in items]) )
     output_fn = os.path.join(dest_dir, main_paper['bibcode'] + ".txt")
     with open(output_fn, 'w') as fout: fout.writelines("\n".join(lines))
     print "written to %s" % output_fn
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     main_list = get_paper_list(url)
     print "total: %d" % len(main_list)
 
-    for (index, (name, link)) in enumerate(main_list[0:5], start = 1):
+    for (index, (name, link)) in enumerate(main_list, start = 1):
         print "== %d/%d ==" % (index, len(main_list))
         status, main_paper, valid_citations = fetch_for_one_paper(name, link)
         write_for_one_paper(destdir, status, main_paper, valid_citations)
