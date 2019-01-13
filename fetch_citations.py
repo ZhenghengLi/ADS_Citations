@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os, re, sys, shutil, requests
+import io, os, re, sys, shutil, requests
 from bs4 import BeautifulSoup as BS
 
 def get_paper_list(url):
@@ -63,22 +63,22 @@ def fetch_for_one_paper(name, link):
         citation = get_paper_info(link)
         if check_citation_type(main_paper, citation):
             valid_citations.append(citation)
-            # print_paper_info(citation)
             print '[cited by others]'
         else:
             print '[cited by self]'
+        # print_paper_info(citation, 8)
     status = "valid: %d; total: %d" % (len(valid_citations), len(citation_list))
     return status, main_paper, valid_citations
 
 def write_for_one_paper(dest_dir, status, main_paper, valid_citations):
     print "writting citation data for paper " + main_paper['bibcode'], "...",
     sys.stdout.flush()
-    fmt, items = u"%s, %s, %s", ['bibcode', 'title', 'ads_link']
+    fmt, items = "%s, %s, %s", ['bibcode', 'title', 'ads_link']
     lines = [status, ', '.join(items)]
-    lines.append( fmt % tuple([main_paper[it].encode('utf-8') for it in items]) )
-    for citation in valid_citations: lines.append( fmt % tuple([citation[it].encode('utf-8') for it in items]) )
+    lines.append( fmt % tuple([main_paper[it] for it in items]) )
+    for citation in valid_citations: lines.append( fmt % tuple([citation[it] for it in items]) )
     output_fn = os.path.join(dest_dir, main_paper['bibcode'] + ".txt")
-    with open(output_fn, 'w') as fout: fout.writelines("\n".join(lines))
+    with io.open(output_fn, 'w') as fout: fout.writelines("\n".join(lines))
     print "written to %s" % output_fn
 
 def download_pdfs(dest_dir, main_paper, valid_citations):
