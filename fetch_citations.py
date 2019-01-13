@@ -19,6 +19,8 @@ def get_paper_info(url):
     result['ads_link'] = url
     result['title'] = soup.find("title").get_text()
     result['author_list'] = soup.find("meta", attrs = {"name": "citation_authors"}).get("content").split("; ")
+    data_string = soup.find("meta", attrs = {"name": "citation_date"}).get("content")
+    result['citation_date'] = tuple(data_string.split("/")[::-1])
     result['bibcode'] = soup.find('input', attrs = {"type": "hidden", "name": "bibcode"}).get("value")
     tag = soup.find("a", string = re.compile(r'.*Electronic Refereed Journal Article.*'))
     result['article_link'] = tag.get("href") if tag else None
@@ -41,7 +43,7 @@ def check_citation_type(main_paper, citation):
 def fetch_for_one_paper(name, link):
     print 'fetching citations for paper ' + name + ' ...'
     main_paper = get_paper_info(link)
-    # print_paper_info(main_paper)
+    print_paper_info(main_paper)
     if not main_paper['citation_link']:
         print "NO CITATIONS for this paper."
         return "NO CITATIONS", main_paper, []
@@ -71,7 +73,7 @@ def fetch_for_one_paper(name, link):
 def write_for_one_paper(dest_dir, status, main_paper, valid_citations):
     print "writting citation data for paper " + main_paper['bibcode'], "...",
     sys.stdout.flush()
-    fmt, items = "%s, %s, %s", ['bibcode', 'title', 'ads_link']
+    fmt, items = u"%s, %s, %s", ['bibcode', 'title', 'ads_link']
     lines = [status, ', '.join(items)]
     lines.append( fmt % tuple([main_paper[it].encode('utf-8') for it in items]) )
     for citation in valid_citations: lines.append( fmt % tuple([citation[it].encode('utf-8') for it in items]) )
