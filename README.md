@@ -12,4 +12,4 @@ $ ../sort_by_citation_count.py *.txt
 
 ### Step 3: Convert to ms-word file  
 $ # keep in the 'results' folder  
-$ for x in *.txt; do echo $x; ../ADS_Citations/save_to_docx.py $x ${x/.txt/.docx}; done  
+$ for x in *.txt; do echo $x; ../save_to_docx.py $x ${x/.txt/.docx}; done  
