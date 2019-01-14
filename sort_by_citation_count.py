@@ -23,9 +23,9 @@ if __name__ == '__main__':
         bibcode_list.append(fn[:-4])
         citation_count_list.append(read_citation_count(fn))
     bibcode_index = np.argsort(citation_count_list)
-    for x in reversed(bibcode_index):
-        print x, bibcode_list[x], citation_count_list[x]
-        idx_str = "%03d_" % (x + 1)
+    for idx, x in enumerate(reversed(bibcode_index), start = 1):
+        print idx, bibcode_list[x], citation_count_list[x]
+        idx_str = "%03d_" % idx
         os.rename(bibcode_list[x] + ".txt", idx_str + bibcode_list[x] + ".txt")
         os.rename(bibcode_list[x] + "_pdfs", idx_str + bibcode_list[x] + "_pdfs")
 
