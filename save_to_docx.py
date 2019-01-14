@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Author: Zhengheng Li <zhenghenge@gmail.com>
+
 import sys, re, io
 from docx import Document
 from docx.shared import Inches

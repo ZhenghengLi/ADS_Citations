@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Author: Zhengheng Li <zhenghenge@gmail.com>
+
 import os, sys, re, io
 import numpy as np
 

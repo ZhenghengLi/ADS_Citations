@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Author: Zhengheng Li <zhenghenge@gmail.com>
+
 import io, os, re, sys, shutil, requests
 from bs4 import BeautifulSoup as BS
 
