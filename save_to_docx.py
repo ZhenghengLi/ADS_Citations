@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys, re
+import sys, re, io
 from docx import Document
 from docx.shared import Inches
 
@@ -50,6 +50,8 @@ if __name__ == '__main__':
         exit(1)
 
     input_fn, output_fn = sys.argv[1:3]
+    paper_id = int(input_fn[0:3])
+    paper = read_paper(input_fn)
 
     document = Document()
 
@@ -57,35 +59,24 @@ if __name__ == '__main__':
     table.style = 'Table Grid'
 
     add_two_cols(table,
-            u'论文1',
-            u'填写论文信息，格式见备注1')
+            u'论文 %d' % paper_id,
+            '. '.join([paper['main']['author_list_str'],
+                paper['main']['title'], paper['main']['publication_journal']]))
 
     add_one_col(table,
-            u'论文引用情况及重要评价：填写论文信息，格式见备注1')
+            u"\n".join([u"论文引用情况及重要评价：", paper['main']['bibcode'],
+                paper['main']['publication_date'], paper['main']['ads_link']]))
 
     add_one_col(table,
-            u'引用数：   他引数（文献被除作者及合作者以外其他人的引用）：')
+            u'引用数： %d    他引数： %d' % (paper['total'], paper['valid']) )
 
-    add_two_cols(table,
-            u'他引论文1',
-            u'填写论文信息，格式见备注1')
-
-    add_one_col(table,
-            u'评价的中英文：引用部分的重要评价原文，如原文是英文请同时翻译成中文，如判断某一篇论文没有重要评价，就空着')
-
-    add_two_cols(table,
-            u'他引论文2',
-            u'')
-
-    add_one_col(table,
-            u'')
-
-    add_two_cols(table,
-            u'他引论文n',
-            u'')
-
-    add_one_col(table,
-            u'')
+    for index, citation in enumerate(paper['citations'], start = 1):
+        add_two_cols(table,
+                u'他引论文 %d' % index,
+                '. '.join([citation['author_list_str'], citation['title'], citation['publication_journal']]))
+        add_one_col(table,
+                u"\n".join([u"评价的中英文：", citation['bibcode'],
+                    citation['publication_date'], citation['ads_link']]))
 
     # document.add_page_break()
     document.save(output_fn)
